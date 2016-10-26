@@ -12,7 +12,11 @@ import java.net.InetSocketAddress;
 /**
  * Created by chengyq on 2016/10/25.
  */
-public class ChatInterfaceListener extends UntypedActor {
+public class ChatListener extends UntypedActor {
+
+    public ChatListener(ActorRef manager) {
+        this.manager = manager;
+    }
 
     @Override
     public void preStart() {
@@ -29,7 +33,7 @@ public class ChatInterfaceListener extends UntypedActor {
             System.out.println("stopped");
         } else if (message instanceof Connected) {
             final Connected conn = (Connected) message;
-            final ActorRef handler = getContext().actorOf(Props.create(ChatInterfaceConnHandler.class));
+            final ActorRef handler = getContext().actorOf(Props.create(ChatHandler.class, this.manager));
             getSender().tell(TcpMessage.register(handler), getSelf());
             System.out.println("new income connection " + conn.toString());
         }
@@ -37,7 +41,9 @@ public class ChatInterfaceListener extends UntypedActor {
 
     private void bind() {
         final ActorRef tcp = Tcp.get(getContext().system()).manager();
-        final InetSocketAddress addr = new InetSocketAddress("0.0.0.0", 7777);
+        final InetSocketAddress addr = new InetSocketAddress("0.0.0.0", 7778);
         tcp.tell(TcpMessage.bind(getSelf(), addr, 100), getSelf());
     }
+
+    private ActorRef manager;
 }

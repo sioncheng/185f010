@@ -56,13 +56,6 @@ public class ChatInterfaceConnHandler extends UntypedActor {
                 filename = "404.html";
                 status = "HTTP/1.1 404 Not Found";
             }
-
-            String[] filenameParts = filename.split("\\.");
-            String ext = filenameParts[filenameParts.length - 1].toLowerCase();
-
-            if (".js".equals(ext)) {
-                contentType = "Content-Type: text/javascript; charset=utf-8";
-            }
         } else {
             status = "HTTP/1.1 400 Bad Request";
             filename = "invalid.html";
@@ -71,8 +64,8 @@ public class ChatInterfaceConnHandler extends UntypedActor {
         String[] filenameParts = filename.split("\\.");
         String ext = filenameParts[filenameParts.length - 1].toLowerCase();
 
-        if (".js".equals(ext)) {
-            contentType = "Content-Type: text/javascript; charset=utf-8";
+        if ("js".equals(ext)) {
+            contentType = "Content-Type: application/javascript; charset=utf-8";
         }
 
         File file = new File("./src/main/resources/groupchat/" + filename);
