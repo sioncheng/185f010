@@ -80,6 +80,8 @@ public class LoginWindow extends JFrame implements ActionListener, WindowListene
         if (jTextField == null) {
             jTextField = new javax.swing.JTextField();
             jTextField.setBounds(96, 49, 160, 20);
+
+            jTextField.addActionListener(this);
         }
         return jTextField;
     }
