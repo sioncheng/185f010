@@ -12,9 +12,9 @@ import java.net.InetSocketAddress;
 /**
  * Created by chengyq on 2016/10/25.
  */
-public class ChatListener extends UntypedActor {
+public class ChatServer extends UntypedActor {
 
-    public ChatListener(ActorRef manager) {
+    public ChatServer(ActorRef manager) {
         this.manager = manager;
     }
 

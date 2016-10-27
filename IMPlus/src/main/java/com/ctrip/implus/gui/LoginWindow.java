@@ -3,13 +3,15 @@ package com.ctrip.implus.gui;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 /**
  * Created by chengyq on 2016/10/26.
  */
-public class LoginWindow extends JFrame implements ActionListener {
+public class LoginWindow extends JFrame implements ActionListener, WindowListener {
 
-    public LoginWindow(LoginInterface li) {
+    public LoginWindow(LoginListener listener) {
 
         super();
         this.setSize(300, 200);
@@ -19,9 +21,50 @@ public class LoginWindow extends JFrame implements ActionListener {
         this.add(getJButton(), null);
         this.setTitle("登录");
         this.setLocationRelativeTo(null);
+        this.addWindowListener(this);
 
-        this.li = li;
+        this.listener = listener;
     }
+
+
+
+    public void actionPerformed(ActionEvent e) {
+        this.listener.login(this.jTextField.getText().trim());
+    }
+
+    public void warn(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    //window listener
+    public void windowOpened(WindowEvent e) {
+        this.jTextField.requestFocus();
+    }
+
+    public void windowClosing(WindowEvent e) {
+        this.listener.onClosing();
+    }
+
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    public void windowDeactivated(WindowEvent e) {
+
+    }
+    //window listener
 
 
     private javax.swing.JLabel getJLabel() {
@@ -53,17 +96,9 @@ public class LoginWindow extends JFrame implements ActionListener {
         return jButton;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        this.li.login(this.jTextField.getText().trim());
-    }
-
-    public void warn(String message) {
-        JOptionPane.showMessageDialog(this, message);
-    }
-
     private JLabel jLabel;
     private JTextField jTextField;
     private JButton jButton;
 
-    private LoginInterface li;
+    private LoginListener listener;
 }

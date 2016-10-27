@@ -1,21 +1,23 @@
 package com.ctrip.implus.gui;
 
+import com.ctrip.implus.*;
+
 import javax.swing.*;
 import java.awt.event.*;
 
 /**
  * Created by chengyq on 2016/10/26.
  */
-public class ChatWindow extends JFrame implements ActionListener, WindowListener{
+public class ChatWindow extends JFrame implements ActionListener, WindowListener {
 
-    public ChatWindow() {
+    public ChatWindow(ChatListener listener) {
 
         super();
         this.setSize(880, 600);
         this.getContentPane().setLayout(null);
         this.add(getJLabel(), null);
         this.add(getJTextArea(), null);
-        this.add(getjTextField(),null);
+        this.add(getjTextField(), null);
         this.add(getJButton(), null);
         this.add(getJLabel2());
         this.add(getJTextArea2());
@@ -23,7 +25,67 @@ public class ChatWindow extends JFrame implements ActionListener, WindowListener
         this.setLocationRelativeTo(null);
 
         this.addWindowListener(this);
+
+        this.listener = listener;
     }
+
+    public void warn(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    public void appendMessage(String from, String message) {
+        this.jTextArea.append(from + "  说: " + message + "\r\n");
+        JScrollBar jsb = this.areaScrollPane.getVerticalScrollBar();
+        jsb.setValue(jsb.getMaximum());
+    }
+
+    public void addMember(String member) {
+        this.jTextArea2.append(member + "\r\n");
+        JScrollBar jsb = this.areaScrollPane2.getVerticalScrollBar();
+        jsb.setValue(jsb.getMaximum());
+    }
+
+    public void removeMember(String member){
+        String members = this.jTextArea2.getText();
+        this.jTextArea2.setText(members.replace(member+"\r\n",""));
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        //selectionButtonPressed();
+        String input = this.jTextField.getText().trim();
+        this.jTextField.setText("");
+        this.listener.sendMessage(input);
+    }
+
+    //window listener
+    public void windowOpened(WindowEvent e) {
+        this.jTextField.requestFocus();
+    }
+
+    public void windowClosing(WindowEvent e) {
+        this.listener.onExit();
+    }
+
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    public void windowDeactivated(WindowEvent e) {
+
+    }
+    //window listener
 
 
     private javax.swing.JLabel getJLabel() {
@@ -48,7 +110,7 @@ public class ChatWindow extends JFrame implements ActionListener, WindowListener
 
             areaScrollPane = new JScrollPane(jTextArea);
             areaScrollPane.setVerticalScrollBarPolicy(
-                    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             areaScrollPane.setBounds(96, 49, 460, 400);
             //areaScrollPane.setPreferredSize(new Dimension(250, 250));
         }
@@ -56,9 +118,9 @@ public class ChatWindow extends JFrame implements ActionListener, WindowListener
     }
 
     private JTextField getjTextField() {
-        if(jTextField == null) {
+        if (jTextField == null) {
             jTextField = new JTextField();
-            jTextField.setBounds(96, 49 + 410,380,27);
+            jTextField.setBounds(96, 49 + 410, 380, 27);
             jTextField.grabFocus();
             jTextField.addActionListener(this);
         }
@@ -82,7 +144,7 @@ public class ChatWindow extends JFrame implements ActionListener, WindowListener
         if (jLabel2 == null) {
             jLabel2 = new javax.swing.JLabel();
             //left,top,width,height
-            jLabel2.setBounds(34  + 560, 49, 53, 18);
+            jLabel2.setBounds(34 + 560, 49, 53, 18);
             jLabel2.setText("成员:");
         }
         return jLabel2;
@@ -100,49 +162,11 @@ public class ChatWindow extends JFrame implements ActionListener, WindowListener
 
             areaScrollPane2 = new JScrollPane(jTextArea2);
             areaScrollPane2.setVerticalScrollBarPolicy(
-                    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            areaScrollPane2.setBounds(34  + 560 + 60, 49, 200, 400);
-            //areaScrollPane.setPreferredSize(new Dimension(250, 250));
+                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            areaScrollPane2.setBounds(34 + 560 + 60, 49, 200, 400);
         }
         return areaScrollPane2;
     }
-
-    public void actionPerformed(ActionEvent e) {
-        //selectionButtonPressed();
-        String input = this.jTextField.getText().trim();
-        this.jTextArea2.append(input+"\r\n");
-        this.jTextField.setText("");
-    }
-
-    //window listener
-    public void windowOpened(WindowEvent e) {
-        this.jTextField.requestFocus();
-    }
-
-    public void windowClosing(WindowEvent e) {
-
-    }
-
-    public void windowClosed(WindowEvent e) {
-
-    }
-
-    public void windowIconified(WindowEvent e) {
-
-    }
-
-    public void windowDeiconified(WindowEvent e) {
-
-    }
-
-    public void windowActivated(WindowEvent e) {
-
-    }
-
-    public void windowDeactivated(WindowEvent e) {
-
-    }
-    //window listener
 
     private JLabel jLabel;
     private JTextArea jTextArea;
@@ -154,4 +178,5 @@ public class ChatWindow extends JFrame implements ActionListener, WindowListener
     private JTextArea jTextArea2;
     private JScrollPane areaScrollPane2;
 
+    private ChatListener listener;
 }

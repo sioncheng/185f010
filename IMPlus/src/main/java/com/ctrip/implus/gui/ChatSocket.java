@@ -1,37 +1,41 @@
 package com.ctrip.implus.gui;
 
 import com.ctrip.implus.ChatCommand;
+import com.ctrip.implus.ChatCommandBuilder;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by chengyq on 2016/10/26.
  */
 public class ChatSocket implements Runnable {
 
-    public ChatSocket(String serverAddr, int serverPort, ChatSocketListener listener) {
-        this.socketAddr = new InetSocketAddress(serverAddr, serverPort);
+    public ChatSocket(String serverAddress, int serverPort, ChatSocketListener listener) {
+        this.socketAddress = new InetSocketAddress(serverAddress, serverPort);
         this.listener = listener;
+        this.cb = new ChatCommandBuilder();
     }
 
-    public String login(String nickname) {
+    public void login(String nickname) {
         try {
             socket = new Socket();
-            socket.connect(this.socketAddr);
+            socket.connect(this.socketAddress);
         } catch (java.io.IOException ioe) {
             this.close();
-            return "网络连接失败";
+            this.listener.onLogin("网络连接失败");
         } catch (Exception ex) {
             this.close();
-            return "登录异常";
+            this.listener.onLogin("登录异常");
         }
 
         ChatCommand reqCmd = new ChatCommand(ChatCommand.LOGIN, nickname, "");
         byte[] bytes = reqCmd.toBytes();
         if (bytes == null) {
             this.close();
-            return "数据异常";
+            this.listener.onLogin("数据异常");
         }
 
 
@@ -39,28 +43,36 @@ public class ChatSocket implements Runnable {
             socket.getOutputStream().write(bytes);
         } catch (Exception e) {
             this.close();
-            return "发送网络数据失败";
+            this.listener.onLogin("发送网络数据失败");
         }
 
         try {
-            ChatCommand resCmd = read();
-            if (resCmd == null) {
-                return "解析登录响应失败";
+            List<ChatCommand> cmds = read();
+            if (cmds.size() == 0) {
+                this.listener.onLogin("解析登录响应失败");
             }
-            if (resCmd.getCommand().equals(ChatCommand.LOGIN) && resCmd.getMessage().equals("ok")) {
+
+            Iterator<ChatCommand> itr = cmds.iterator();
+            ChatCommand firstCmd = itr.next();
+
+            if (firstCmd.getCommand().equals(ChatCommand.LOGIN) && firstCmd.getMessage().equals("ok")) {
                 loopRead();
-                return "";
+                this.listener.onLogin("");
             } else {
-                return resCmd.getMessage();
+                this.listener.onLogin(firstCmd.getMessage());
             }
+
+            while(itr.hasNext()){
+                this.listener.onReceive(itr.next());
+            }
+
         } catch (Exception ex) {
-            return ex.getMessage();
+            this.listener.onLogin(ex.getMessage());
         }
     }
 
-    public String send(String from, String message) {
-        ChatCommand reqCmd = new ChatCommand(ChatCommand.SEND, from, message);
-        byte[] bytes = reqCmd.toBytes();
+    public String send(ChatCommand chatCommand) {
+        byte[] bytes = chatCommand.toBytes();
         if (bytes == null) {
             this.close();
             return "数据异常";
@@ -84,8 +96,11 @@ public class ChatSocket implements Runnable {
     public void run() {
         while (true) {
             try {
-                ChatCommand resCmd = read();
-                this.listener.onReceive(resCmd);
+                List<ChatCommand> resCmd = read();
+                Iterator<ChatCommand> itr = resCmd.iterator();
+                while(itr.hasNext()) {
+                    this.listener.onReceive(itr.next());
+                }
             } catch (Exception ex) {
                 this.close();
                 this.listener.onException(ex.getMessage());
@@ -95,7 +110,7 @@ public class ChatSocket implements Runnable {
         }
     }
 
-    private ChatCommand read() throws Exception {
+    private List<ChatCommand> read() throws Exception {
         byte[] buffer = new byte[1024];
         int index = 0;
         int len = 1024;
@@ -109,10 +124,13 @@ public class ChatSocket implements Runnable {
                 index += n;
                 len -= n;
 
-                String commandLine = new String(buffer, 0, index, "UTF8");
-                int endIndex = commandLine.indexOf("\r\n");
-                if (endIndex > 0) {
-                    return ChatCommand.parse(commandLine.substring(0, endIndex));
+
+                synchronized (this) {
+                    String s = new String(buffer, 0, index, "UTF8");
+                    List<ChatCommand> cmds = cb.append(s);
+                    if (cmds.size() > 0) {
+                        return cmds;
+                    }
                 }
             }
 
@@ -132,7 +150,9 @@ public class ChatSocket implements Runnable {
     }
 
 
-    private InetSocketAddress socketAddr;
+    private InetSocketAddress socketAddress;
     private Socket socket;
     private ChatSocketListener listener;
+
+    private ChatCommandBuilder cb;
 }

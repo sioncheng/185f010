@@ -8,8 +8,10 @@ import java.util.Comparator;
 public class ChatCommand {
 
     public final static String LOGIN = "login";
+    public final static String LOGOUT = "logut";
     public final static String SEND = "sendd";
     public final static String JOIN = "joinn";
+    public final static String LEAVE = "leave";
 
     public static ChatCommand parse(String commandText) {
         String command = commandText.substring(0, 5);
@@ -57,12 +59,16 @@ public class ChatCommand {
 
     public byte[] toBytes() {
         try {
-            String commandLine = this.getCommand() + this.paddingFrom() + this.getMessage() + "\r\n";
-            return commandLine.getBytes("UTF8");
+            return this.toString().getBytes("UTF8");
         }
         catch (Exception ex) {
             return null;
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.getCommand() + this.paddingFrom() + this.getMessage() + "\r\n";
     }
 
     private String paddingFrom() {
