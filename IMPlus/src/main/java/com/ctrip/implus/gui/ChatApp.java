@@ -76,6 +76,9 @@ public class ChatApp implements LoginListener, ChatListener, ChatSocketListener 
     }
 
     public void sendMessage(String message){
+        if(message.length() == 0){
+            return;
+        }
         if(message.length() > 500) {
             cw.warn("消息字数不要多于500");
             return;

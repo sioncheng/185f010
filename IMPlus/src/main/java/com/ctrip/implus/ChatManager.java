@@ -49,7 +49,7 @@ public class ChatManager extends UntypedActor {
             getSender().tell(resCmd, getSelf());
 
             //welcome
-            ChatCommand welcomeCmd = new ChatCommand(ChatCommand.SEND, "system", "欢迎你，"cmd.getFrom() + "。");
+            ChatCommand welcomeCmd = new ChatCommand(ChatCommand.SEND, "system", "欢迎你，" + cmd.getFrom() + "。");
             getSender().tell(welcomeCmd, getSelf());
 
             //tell members
@@ -78,7 +78,7 @@ public class ChatManager extends UntypedActor {
     private void processLogout(ChatCommand cmd) {
         //broad cast leave information
         ActorRef actorRef = this.clients.remove(cmd.getFrom());
-        if(actorRef == null) {
+        if (actorRef == null) {
             return;
         }
 
